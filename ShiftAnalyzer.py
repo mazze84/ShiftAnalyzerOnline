@@ -22,6 +22,7 @@ def shift(df_shifts):
     return df_shifts
 
 
+@st.cache_data
 def calc_shift_len(df, active_speed=0.2, seconds_inactive=10):
     shifts = []
     avg_heartrate = 0
@@ -34,10 +35,9 @@ def calc_shift_len(df, active_speed=0.2, seconds_inactive=10):
     last_time = list(trackpoints.keys())[0]
     changed_time =  list(trackpoints.keys())[0]
 
-    is_active = False#list(trackpoints.values())[0]['Speed_rolling'] > active_speed
+    is_active = list(trackpoints.values())[0]['Speed_rolling'] > active_speed
     minMax= []
     minMaxHF = []
-    print("----------------------------------------------------------")
     for time, trackpoint_list in trackpoints.items():
         speed = trackpoint_list['Speed_rolling']
         heartrate = trackpoint_list['Heartrate']
@@ -70,24 +70,19 @@ def calc_shift_len(df, active_speed=0.2, seconds_inactive=10):
             avg_speed += speed
             last_time = time
 
-
-
     df['SpeedMinMax'] = minMax
     df['HFMinMax'] = minMaxHF
     shifts.append([start_time, time, calc_avg(avg_heartrate, heartrate_cnt), calc_avg(avg_speed, heartrate_cnt, decimals=2), calc_duration_seconds(start_time, list(trackpoints.keys())[len(trackpoints)-1]), is_active])
     df_shifts = pd.DataFrame(shifts, columns=['Starttime', 'Endtime', 'Average Heartrate', 'Average Speed', 'Duration', 'Active'])
-    df_shifts['Time_Diff'] = df_shifts['Starttime'] - df_shifts['Endtime']
-    return df_shifts
+    df_shifts['Duration_diff'] = df_shifts['Starttime'] - df_shifts['Endtime']
+    df_shifts.index.name = "Shift No."
+    return df, df_shifts
 
-
-
-# extracts column in matrix to list
-def extract(lst, index):
-    return [item[index] for item in lst]
 
 def calc_duration_seconds(start_time, end_time):
     duration = end_time - start_time
     return duration.total_seconds()
+
 
 def calc_avg(list, cnt, decimals=0):
     avg = 0

@@ -5,20 +5,23 @@ import FileHandler as fh
 import ShiftAnalyzer as sa
 
 st.set_page_config(
+    layout='wide',
     page_title="Shift Analyzer",
     page_icon="🏒",
 )
 
 def draw_page(df):
-    df_shifts = sa.calc_shift_len(df)
-
+    df, df_shifts = sa.calc_shift_len(df)
     st.line_chart(data=df, x="time_diff", y=["Heartrate", "HFMinMax"], color=["#00F08F", "#FF0000"])
     st.line_chart(data=df, x="time_diff", y=["Speed_rolling", "SpeedMinMax"], color=["#00F08F", "#0000FF"])
 
-    st.bar_chart(data=df_shifts, y="Duration", color='Active')
+    multiselect = st.multiselect("Show only select shifts", df_shifts.index.to_series(), df_shifts.index.to_series())
+    st.bar_chart(data=df_shifts.filter(items=multiselect, axis=0), y="Duration", color='Active')
     option = st.selectbox('Show only shifts?', ('All', 'Shift', 'Bench'))
-    df_active = df_shifts[df_shifts["Active"] == True]
-    df_bench = df_shifts[df_shifts["Active"] == False]
+
+    df_filtered = df_shifts.filter(items=multiselect, axis=0)
+    df_active = df_filtered[df_filtered["Active"] == True]
+    df_bench = df_filtered[df_filtered["Active"] == False]
     if "Shift" == option:
         col1,col2,col3 = st.columns([1,1,1])
         duration_mean = round(df_active["Duration"].mean(),2)
@@ -36,15 +39,23 @@ def draw_page(df):
         st.metric(label="avg. Duration", value=duration_mean)
         st.table(df_bench[["Duration", "Average Heartrate", "Average Speed"]])
     else:
-        col1, col2, col3 = st.columns([2, 1, 2])
-        duration_shift_mean = round(df_active["Duration"].mean(), 2)
+        col1, col2, col3 = st.columns([1, 1, 1])
+        duration_shift_mean = round(df_active["Duration"].mean(),2)
+        duration_bench_mean = round(df_bench["Duration"].mean(),2)
         with col1:
             st.metric(label="avg. duration shift", value=duration_shift_mean)
-        duration_bench_mean = round(df_bench["Duration"].mean(), 2)
-        with col3:
             st.metric(label="avg. duration bench", value=duration_bench_mean)
-        st.table(df_shifts[["Duration", "Average Heartrate", "Average Speed"]])
-
+        hr_shift_mean = round(df_active["Average Heartrate"].mean())
+        hr_bench_mean = round(df_bench["Average Heartrate"].mean())
+        with col2:
+            st.metric(label="avg. HR shift", value=hr_shift_mean)
+            st.metric(label="avg. HR bench", value=hr_bench_mean)
+        speed_shift_mean = round(df_active["Average Speed"].mean(), 2)
+        speed_bench_mean = round(df_bench["Average Speed"].mean(), 2)
+        with col3:
+            st.metric(label="avg. speed shift", value=speed_shift_mean)
+            st.metric(label="avg. speed bench", value=speed_bench_mean)
+        st.table(df_filtered[["Duration", "Average Heartrate", "Average Speed"]])
 
 
 st.title('Shift Analyzer')
