@@ -4,6 +4,11 @@ import pandas as pd
 import FileHandler as fh
 import ShiftAnalyzer as sa
 
+st.set_page_config(
+    page_title="Shift Analyzer",
+    page_icon="🏒",
+)
+
 def draw_page(df):
 
     df_shifts = sa.calc_shift_len(df)
@@ -28,14 +33,35 @@ def draw_page(df):
         st.table(df_shifts[["Duration", "Average Heartrate", "Average Speed"]])
 
 
-st.header('Shift Analyzer')
+
+st.title('Shift Analyzer')
+st.write("# ")
+st.markdown(
+    """
+    Welcome to Hockey Shift Analyzer! 🏒 
+    Drop a tcx or fit file to analyze your hockey shifts from speed data
+    
+    If you have feedback please go to the GitHub repository 
+    
+    ### Want to learn more?
+    Check out [GitHub repo](https://github.com/mazze84/ShiftAnalyzerOnline)
+"""
+)
+
 uploaded_file = st.file_uploader("Upload a .fit or .tcx file for shift analysis", type=['tcx','fit'])
 if uploaded_file is not None:
-    stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+    df = None
+    if uploaded_file.name[-3:] == 'tcx':
+        stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+        df = fh.import_file(stringio, uploaded_file.name[-3:])
+        df = sa.interpret_data(df)
+        draw_page(df)
+    elif uploaded_file.name[-3:] == 'fit':
+        df = fh.import_fit_file(uploaded_file)
+        df = sa.interpret_data(df)
+        draw_page(df)
 
-    trackpoints = fh.import_tcx_file(stringio)
-    df = sa.interpret_data(trackpoints)
-    draw_page(df)
+
 
 
 
