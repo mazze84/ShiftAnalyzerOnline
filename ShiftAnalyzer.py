@@ -4,20 +4,22 @@ import streamlit as st
 def interpret_data(df):
     df['Speed_rolling'] = moving_average(df["Speed"], 5)
     df["time_index_seconds"] = time_index(df.index.to_series())
+    df = time_index(df)
     return df
 
 def time_index(df):
-    timestamps = df.index.to_series()
-
     calc_duration_seconds(df.index.min(), df.index.max())
 
     start_time = df.index.min()
     df['time_diff'] = df.index.to_series() - start_time
+    return df
 
 def shift(df_shifts):
     shifts = []
     for shift in df_shifts.to_dict('index').values():
         shifts.append("Shift" if shift['is_active'] else "Bench")
+    df_shifts['Shift_Desc']
+    return df_shifts
 
 
 def calc_shift_len(df, active_speed=0.2, seconds_inactive=10):

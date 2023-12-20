@@ -52,12 +52,6 @@ def import_tcx_file(file):
 def import_fit_file(file):
     stream = Stream.from_bytes_io(file)
     decoder = Decoder(stream)
-    record_fields = set()
-
-    def mesg_listener(mesg_num, message):
-        if mesg_num == Profile['mesg_num']['RECORD']:
-            for field in message:
-                record_fields.add(field)
 
     messages, errors = decoder.read(apply_scale_and_offset = True,
             convert_datetimes_to_dates = True,
@@ -72,7 +66,6 @@ def import_fit_file(file):
         print(f"Something went wrong decoding the file: {errors}")
         return
 
-    #print(record_fields)
     df = pd.json_normalize(messages, record_path='record_mesgs')
     df.index = df['timestamp']
     df.set_index('timestamp')

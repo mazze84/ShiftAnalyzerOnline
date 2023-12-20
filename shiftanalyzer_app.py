@@ -10,24 +10,28 @@ st.set_page_config(
 )
 
 def draw_page(df):
-
     df_shifts = sa.calc_shift_len(df)
 
-    st.line_chart(data=df, x="time_index_seconds", y=["Heartrate", "HFMinMax"], color=["#00F08F", "#FF0000"])
-    st.line_chart(data=df, x="time_index_seconds", y=["Speed_rolling", "SpeedMinMax"], color=["#00F08F", "#0000FF"])
+    st.line_chart(data=df, x="time_diff", y=["Heartrate", "HFMinMax"], color=["#00F08F", "#FF0000"])
+    st.line_chart(data=df, x="time_diff", y=["Speed_rolling", "SpeedMinMax"], color=["#00F08F", "#0000FF"])
 
     st.bar_chart(data=df_shifts, y="Duration", color='Active')
     option = st.selectbox('Show only active shifts?', ('All', 'Shift', 'Bench'))
     st.write('You selected:', option)
     if "Shift" == option:
         df_active = df_shifts[df_shifts["Active"] == True]
-        duration_mean_df = df_active["Duration"].mean()
-        st.write(duration_mean_df)
+        duration_mean = round(df_active["Duration"].mean(),2)
+        st.metric(label="avg. Duration", value=duration_mean)
+        hr_mean = round(df_active["Average Heartrate"].mean())
+        st.metric(label="avg. Heartrate", value=hr_mean)
+        speed_mean = round(df_active["Average Speed"].mean(),2)
+        st.metric(label="Average Speed", value=speed_mean)
+
         st.table(df_active[["Duration", "Average Heartrate", "Average Speed"]])
     elif "Bench" == option:
         df_bench = df_shifts[df_shifts["Active"] == False]
-        duration_mean_df = df_bench["Duration"].mean()
-        st.write(duration_mean_df)
+        duration_mean = round(df_bench["Duration"].mean(),2)
+        st.metric(label="avg. Duration", value=duration_mean)
         st.table(df_bench[["Duration", "Average Heartrate", "Average Speed"]])
     else:
         st.table(df_shifts[["Duration", "Average Heartrate", "Average Speed"]])
