@@ -16,24 +16,33 @@ def draw_page(df):
     st.line_chart(data=df, x="time_diff", y=["Speed_rolling", "SpeedMinMax"], color=["#00F08F", "#0000FF"])
 
     st.bar_chart(data=df_shifts, y="Duration", color='Active')
-    option = st.selectbox('Show only active shifts?', ('All', 'Shift', 'Bench'))
-    st.write('You selected:', option)
+    option = st.selectbox('Show only shifts?', ('All', 'Shift', 'Bench'))
+    df_active = df_shifts[df_shifts["Active"] == True]
+    df_bench = df_shifts[df_shifts["Active"] == False]
     if "Shift" == option:
-        df_active = df_shifts[df_shifts["Active"] == True]
+        col1,col2,col3 = st.columns([1,1,1])
         duration_mean = round(df_active["Duration"].mean(),2)
-        st.metric(label="avg. Duration", value=duration_mean)
+        with col1:
+            st.metric(label="avg. Duration", value=duration_mean)
         hr_mean = round(df_active["Average Heartrate"].mean())
-        st.metric(label="avg. Heartrate", value=hr_mean)
+        with col2:
+            st.metric(label="avg. Heartrate", value=hr_mean)
         speed_mean = round(df_active["Average Speed"].mean(),2)
-        st.metric(label="Average Speed", value=speed_mean)
-
+        with col3:
+            st.metric(label="Average Speed", value=speed_mean)
         st.table(df_active[["Duration", "Average Heartrate", "Average Speed"]])
     elif "Bench" == option:
-        df_bench = df_shifts[df_shifts["Active"] == False]
         duration_mean = round(df_bench["Duration"].mean(),2)
         st.metric(label="avg. Duration", value=duration_mean)
         st.table(df_bench[["Duration", "Average Heartrate", "Average Speed"]])
     else:
+        col1, col2, col3 = st.columns([2, 1, 2])
+        duration_shift_mean = round(df_active["Duration"].mean(), 2)
+        with col1:
+            st.metric(label="avg. duration shift", value=duration_shift_mean)
+        duration_bench_mean = round(df_bench["Duration"].mean(), 2)
+        with col3:
+            st.metric(label="avg. duration bench", value=duration_bench_mean)
         st.table(df_shifts[["Duration", "Average Heartrate", "Average Speed"]])
 
 
@@ -48,8 +57,8 @@ st.markdown(
     If you have feedback please go to the GitHub repository 
     
     ### Want to learn more?
-    Check out [GitHub repo](https://github.com/mazze84/ShiftAnalyzerOnline)
-"""
+    Check out the [GitHub repo](https://github.com/mazze84/ShiftAnalyzerOnline)
+    """
 )
 
 uploaded_file = st.file_uploader("Upload a .fit or .tcx file for shift analysis", type=['tcx','fit'])

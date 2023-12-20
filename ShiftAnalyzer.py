@@ -18,7 +18,7 @@ def shift(df_shifts):
     shifts = []
     for shift in df_shifts.to_dict('index').values():
         shifts.append("Shift" if shift['is_active'] else "Bench")
-    df_shifts['Shift_Desc']
+    df_shifts['Shift Desc']
     return df_shifts
 
 
