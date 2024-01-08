@@ -78,12 +78,21 @@ if uploaded_file is not None:
     if uploaded_file.name[-3:] == 'tcx':
         stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
         df = fh.import_file(stringio, uploaded_file.name[-3:])
-        df = sa.interpret_data(df)
-        draw_page(df)
+        df.head()
+        if 'speed' in df.keys():
+            df = sa.interpret_data(df)
+            draw_page(df)
+        else:
+            st.error("Data contains no speed values")
     elif uploaded_file.name[-3:] == 'fit':
-        df = fh.import_fit_file(uploaded_file)
-        df = sa.interpret_data(df)
-        draw_page(df)
+        errors, df = fh.import_fit_file(uploaded_file)
+        if errors is not None and len(errors) >0:
+            st.error(errors)
+        elif 'Speed' in df.keys():
+            df = sa.interpret_data(df)
+            draw_page(df)
+        else:
+            st.error("Data contains no speed values")
 
 
 

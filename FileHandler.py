@@ -63,8 +63,7 @@ def import_fit_file(file):
             )
 
     if len(errors) > 0:
-        print(f"Something went wrong decoding the file: {errors}")
-        return
+        return errors, None
 
     df = pd.json_normalize(messages, record_path='record_mesgs')
     df.index = df['timestamp']
@@ -72,4 +71,4 @@ def import_fit_file(file):
     df.index.name = "Time"
     df.rename(columns={'enhanced_speed': 'Speed', 'distance': 'Distance', 'heart_rate':'Heartrate'}, inplace=True)
     df.drop(columns=["timestamp"])
-    return df
+    return None, df
